@@ -1,0 +1,40 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: phpapp
+  namespace: phpapp
+  labels:
+    app: phpapp
+spec:
+  selector:
+    matchLabels:
+      app: phpapp
+  replicas: 3
+  strategy:
+    rollingUpdate:
+      maxSurge: 25%
+      maxUnavailable: 25%
+    type: RollingUpdate
+  template:
+    metadata:
+      labels:
+        app: phpapp
+    spec:
+      containers:
+      - name: phpapp
+        image: centiq/phpapp:latest
+        imagePullPolicy: Never
+        ports:
+        - containerPort: 80
+          name: nginx-http
+        volumeMounts:
+        - name: nginx-config-volume
+          mountPath: /etc/nginx/sites-enabled/
+      restartPolicy: Always
+      volumes:
+        - name: nginx-config-volume
+          configMap:
+            name: nginx-configmap
+            items:
+              - key: nginx.conf
+                path: default
